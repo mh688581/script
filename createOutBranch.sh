@@ -212,7 +212,9 @@ then
 echo "error: project_name error!! -> $pn"
 exit 1
 fi
-export BUILD_ENV=${SCRIPT_DIR}
+SO_BIT=$(grep '^SO_BIT' ${pn}/PRO_Parameters.txt | awk -F :=  '{print $2}' | tr -d " "| tr -d "\r")
+echo SO_BIT : $SO_BIT
+export SO_BIT BUILD_ENV=${SCRIPT_DIR}
 bash coollife_package.sh ${SCRIPT_DIR}/android/qiku/device/$1/platform_app ${SCRIPT_DIR}/share_win $pn ${SCRIPT_DIR}/android/qiku
 cd ${SCRIPT_DIR}/android/qiku/device/$1/platform_app
 rm -vf classes.jar obfuscated.jar original.jar
