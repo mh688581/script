@@ -1,0 +1,133 @@
+#规则
+Makefile中符号“$”有特殊的含义（表示变量或者函数的引用），在规则中需要使用符号“$”的地方，需要书写两个连续的（“$$”）
+\ 换行符
+Makefile中，一个目标可以出现在多个规则中。但是这些规则必须是同一类型的规则，要么都是普通规则，要么都是双冒号规则。
+而不允许一个目标同时出现在两种不同类型的规则中。
+#显式规则
+target：prerequisites
+	command  前必须为[tab]，交给shell执行
+	...
+在命令前加一个“-”号表示忽略执行错误
+#隐式规则
+make根据一类目标文件（相同后缀等）自动推导出来的规则。
+#变量
+variable := value  赋值
+$(variable) 取值
+#特殊目标
+.PHONY：
+目标“.PHONY”的所有的依赖被作为伪目标。
+伪目标时这样一个目标：当使用make命令行指定此目标时，这个目标所在规则定义的命令、
+无论目标文件是否存在都会被无条件执行。
+.SUFFIXES:
+特殊目标“SUFFIXES”的所有依赖指出了一系列在后缀规则中需要检查的后缀名（就是当前make需要处理的后缀）。
+.DEFAULT
+Makefile中，目标“.DEFAULT”所在规则定义的命令，被用在重建那些没有具体规则的目标（明确规则和隐含规则）。
+就是说一个文件作为某个规则的依赖，但却不是另外一个规则的目标时。
+Make程序无法找到重建此文件的规则，此种情况时就执行“.DEFAULT”所指定的命令。
+#双冒号
+当同一个文件作为多个双冒号规则的目标时。这些不同的规则会被独立的处理，而不是像普通规则那样合并所有的依赖到一个目标文件
+#内嵌函数
+$(subst FROM,TO,TEXT) 
+把字串“TEXT”中的“FROM”字符替换为“TO”。 
+$(patsubst PATTERN,REPLACEMENT,TEXT) 
+搜索“TEXT”中以空格分开的单词，将符合模式“PTATTERN”替换为“REPLACEMENT”
+注：PATTERN可使用通配符% 代表一个单词中的若干字符 ，如果REPLACEMENT中也有%，name它表示PATTERN中%所代表的字串
+在“PTATTERN”和“REPLACEMENT”中，只有第一个“%”被作为模式字符来处理，之后出现的不再作模式字符（作为一个字符）
+$(strip STRINT) 
+去除字符串开头和结尾的空字符，并将其中多个连续空字符合并为一个空字符。
+$(findstring FIND,IN)
+搜索字串“IN”，查找“FIND”字串。
+$(filter PATTERN…,TEXT)
+过滤掉字串“TEXT”中所有不符合模式“PATTERN”的单词，保留所有符合此模式的单词。
+$(filter-out PATTERN...,TEXT)
+和“filter”函数实现的功能相反。过滤掉字串“TEXT”中所有符合模式“PATTERN”的单词，保留所有不符合此模式的单词。
+$(sort LIST)
+给字串“LIST”中的单词以首字母为准进行排序（升序），并取掉重复的单词。
+$(word N,TEXT)
+取字串“TEXT”中第“N”个单词（“N”的值从1开始）。
+$(wordlist S,E,TEXT)
+从字串“TEXT”中取出从“S”开始到“E”的单词串。“S”和“E”表示单词在字串中位置的数字。
+$(words TEXT)
+字算字串“TEXT”中单词的数目。
+$(firstword NAMES…)
+取字串“NAMES…”中的第一个单词。
+$(dir NAMES…)
+从文件名序列“NAMES…”中取出各个文件名的目录部分。$(dir src/foo.c hacks) -> “src/ ./”
+$(notdir NAMES…)
+从文件名序列“NAMES…”中取出非目录部分。$(notdir src/foo.c hacks) -> ：“foo.c hacks”
+$(suffix NAMES…)
+从文件名序列“NAMES…”中取出各个文件名的后缀。
+$(basename NAMES…)
+从文件名序列“NAMES…”中取出各个文件名的前缀部分.
+$(addsuffix SUFFIX,NAMES…)
+为“NAMES…”中的每一个文件名添加后缀“SUFFIX”.
+$(addprefix PREFIX,NAMES…)
+为“NAMES…”中的每一个文件名添加前缀“PREFIX”.
+$(join LIST1,LIST2)
+将字串“LIST1”和字串“LIST2”各单词进行对应连接。$(join a b c , .c .o) -> 返回值为：“a.c b.o c”
+$(wildcard PATTERN)
+列出当前目录下所有符合模式“PATTERN”格式的文件名。
+
+$(foreach VAR,LIST,TEXT)
+执行时把“LIST”中使用空格分割的单词依次取出赋值给变量“VAR”，然后执行“TEXT”表达式。重复直到“LIST”的最后一个单词（为空时结束）
+$(if CONDITION,THEN-PART[,ELSE-PART])
+if then else
+$(call VARIABLE,PARAM,PARAM,...)
+在执行时，将它的参数“PARAM”依次赋值给临时变量“$(1)”、“$(2)”。
+执行时变量“VARIABLE”被展开为在函数上下文有效的临时变量
+$(value VARIABLE)
+不对变量“VARIBLE”进行任何展开操作，直接返回变量“VARIBALE”的值。
+$(origin VARIABLE)
+查询参数“VARIABLE”（一个变量名）的出处。
+$(shell command)
+调用shell命令
+#控制函数
+$(error TEXT…)
+产生致命错误，并提示“TEXT…”信息给用户，并退出make的执行。
+$(warning TEXT…)
+提示“TEXT…”，make的执行过程继续。
+
+#make命令参数
+make option
+-b ，-m 忽略，提供其他版本兼容性
+-B ，--always-make 强制重建所有目标
+-C dir，--directory=dir 切换工作目录到dir之后再执行make
+-d make 执行过程中打印出所有调试信息。
+--debug[=options] 执行时输出调试信息。可选信息级别，默认options=b
+a（all）
+输出所有类型的调试信息，等效于“-d”选项。
+b（basic）
+输出基本调试信息。包括：那些目标过期、是否重建成功过期目标文件。
+v（verbose）
+“basic”级别之上的输出信息。包括：解析的makefile文件名，不需要重建文件等。此选项目默认打开“basic”级别的调试信息。
+i（implicit）
+输出所有使用到的隐含规则描述。此选项目默认打开“basic”级别的调试信息。
+j（jobs）
+输出所有执行命令的子进程，包括命令执行的PID等。
+m（makefile）
+也就是makefile，输出make读取makefile，更新makefile，执行makefile的信息。
+-e ，--environment-overrides 使用系统环境变量覆盖mk中的同名变量
+-f=file ， --file= file ，--nakefile= file 指定make执行的mk文件
+-h ，--help 打印帮助信息
+-i ，--ignore-errors 执行中忽略错误
+-I dir，--include-dir=dir 指定包含mk文件的搜索目录
+-j [jobs]，--jobs[=jobs] 指定可同时执行的命令数目，无-j时为系统允许的最大可能数目
+-k ，--keep-going 发生错误时不终止make的执行
+-l load，--load-average[=load]，--max-load[=load] 系统负荷超过load时，不再启动新任务
+-n ，--just-print，--dry-run，--recon 只打印要执行的命令，不执行（调试用）
+-o ，--old-file= file，--assume-old= file 指定file不需要重建
+-p ，--print-data-base 命令执行前打印出make读取的mk所有数据及版本信息
+-q ，--question 询问模式，返回查询状态，0为无目标重建，1有需要重建的目标，2有错误发生
+-r ，--no-builtin-rules 取消所有内嵌的隐含规则
+-R ，--no-builtin-variables 取消make内嵌的隐含变量
+-s ，--silent，--quiet 取消命令执行过程的打印
+-S ，--no-keep-going，--stop 取消-k选项
+-t ，--touch 更新所有目标文件的时间戳
+-v ，--version 产看make版本
+-w ，--print-directory 在make进入一个目录读取mk之前打印工作目录
+--no-print-directory 取消-w选项，取消-C参数默认打开-w功能
+-W file，--what-if= file,--new-file= file,--assume-file=file 设定file的时间戳为当前时间
+--warn-undefined-variables 在发现Makefile中存在对没有定义的变量进行引用时给出告警信息
+
+
+

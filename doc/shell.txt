@@ -1,0 +1,120 @@
+#bash shell
+查看Linux所有的系统环境变量
+	evn
+echo $PATH
+
+adb shell 命令
+安装apk 查看包名
+
+<<EOF    后面部分作为普通输入，直到遇到EOF为止
+command1
+command2
+...
+EOF  中间部分作为输入重定向给<<命令 ，一般结合cat使用 
+eq： cat << EOF >> file 
+	...    保存到file中
+	EOF
+
+##%*
+${varible##*string} 从左向右截取最后一个string后的字符串
+${varible#*string}从左向右截取第一个string后的字符串
+${varible%%string*}从右向左截取最后一个string后的字符串
+${varible%string*}从右向左截取第一个string后的字符串
+“*”只是一个通配符有时可以不要
+${#varible} 表示variable的长度length
+
+linux中shell变量$#,$@,$0,$1,$2的含义解释: 
+变量说明: 
+$$ 
+Shell本身的PID（ProcessID） 
+$! 
+Shell最后运行的后台Process的PID 
+$? 
+最后运行的命令的结束代码（返回值） 
+$- 
+使用Set命令设定的Flag一览 
+$* 
+所有参数列表。如"$*"用「"」括起来的情况、以"$1 $2 … $n"的形式输出所有参数。 
+$@ 
+所有参数列表。如"$@"用「"」括起来的情况、以"$1" "$2" … "$n" 的形式输出所有参数。 
+$# 
+添加到Shell的参数个数 
+$0 
+Shell本身的文件名 
+$1～$n 
+添加到Shell的各参数值。$1是第1参数、$2是第2参数…。 
+
+
+#shell文本处理，删除某一页
+
+#sort
+//以字符char分割，number1,number2排序
+sort -k[number1]nr -k[number2]nr -t[char] [filename]
+#uniq
+uniq -c //统计
+uniq -d //仅显示重复的记录
+uniq -u //
+
+#
+ 127 命令找不到；
+ 126 命令找到，文件无法执行；
+ 
+##PATH
+ 临时PATH
+  PATH=$PATH:var
+  env -i PATH=var
+ 全局(非临时)
+ export PATH=$PATH:var
+ 
+#touch
+touch [filename] //创建空白文件
+touch -r from to //复制时间戳
+touch -t [time] [filename] //创建时间戳
+
+#ls 
+-t 最后修改时间
+-R 递归列出
+-S 文件大小
+-r reverse
+
+#sed 10q 等于 head -10  
+
+#打补丁
+diff -c filename1.txt  filename2.txt > filediff.txt
+patch -b filename3.txt < filediff.txt
+#查看进程
+ps -e  //显示PID、TTY、TIME及CMD
+#查找条件匹配的进程
+pgrep [参数] [程序名]
+  -l 列出程序名和进程ID
+  -o 进程起始的ID
+  -n 进程中止的ID
+
+#查看系统资源占用
+ top
+ 
+ #查看内存使用情况  
+ free
+ free [-b -k -m] [-o] [-s delay] [-t] [-V]
+  -b -k -m：分别以字节（KB、MB）为单位显示内存使用情况
+  -s delay：显示每隔多少秒数来显示一次内存使用情况
+  -t：显示内存总和列
+  -o：不显示缓冲区调节列
+
+  #更新系统运行时间、负载信息
+  update
+  时间 系统开机运行时间 用户数 最近1 5 10 分钟的系统负载
+
+  #显示磁盘活动情况
+  vmstat
+
+  #统计CPU的使用情况及tty设备、硬盘和CD-ROM的I/0量
+  iostat
+
+  #打开ubuntu下的任务管理器
+  gnome-system-monitor
+  
+##
+
+从终端打开文件夹形式
+gnome-open .

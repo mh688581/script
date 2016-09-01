@@ -1,0 +1,99 @@
+创建标签
+ git tag -m "message info"
+#查看hash值
+ git rev-parse [filename]
+
+#查看标签对象
+#通过hashValue查看文件
+ git cat-file -p hashValue
+
+#查看工作目录和暂存区的差异
+ git diff
+#查看暂存区和仓库的差异
+ git diff --cached
+#查看工作区和仓库的差异
+ git diff HEAD
+#git文件的分类
+  被忽略的(Ignored)
+    git add [filename] .gitignore
+  已追踪的(Tracked) #add
+  未追踪的(unTracked)
+#查看暂存文件的hash值
+ git ls-files --stage
+#计算hash值(查看某文件的hash值)
+ git hash-object [filename]
+ 
+
+#提交
+ git commit --all(-a)
+ 执行提交之前自动暂存所有未暂存的和未追踪的文件变化
+  注：暂存所以已知的和未修改的文件，然后提交。
+  
+git add 和 git rm是一条对索引进行操作的命令
+#rm
+git rm 同时删除索引和工作目录的文件；
+git rm --cached  (慎用)   仅从索引删除;
+git rm filename //从版本库中删除
+提交到版本库的文件即使删除，该文件在版本库中的历史记录不会被删除。
+
+#mv
+移动重命名文件
+git mv
+#查看重命名的文件的全部历史记录
+git log --follow filename
+
+#树对象保存内容间的关系
+#内容本身保存在blob中
+
+#git不追踪重命名
+#.gitignore文件的优先级
+
+#撤销修改
+1. 自修改后还没有被放到暂存区，撤销修改就回到和版本库的状态；
+2. 添加到暂存区后作了修改，撤销修改就回到添加到暂存区后的状态；
+git checkout -- filename
+#将暂存区的修改撤销掉重回工作区
+git reset HEAD filename
+
+#查看分支
+git branch -a
+git show-branch --more=num
+ 查看多个分支
+git show-branch [branchname] [branchname]
+
+#切换分支命令的实际执行是什么？hash值 HEAD指向一个新的分支名
+git checkout [branchname]
+
+
+（一）git的命令简介
+1，git add 将本地资料先暂存到staging area, add 之后再新增的资料, 于此次commit 不会含在里面.
+2，git rm 删除文件
+3，git mv 移动文件
+4，git status 看目前的状态
+5，git Commit 加注释，查看更改内容，需要先add
+6，git branch # 列出目前有多少分支（branch），修改分支（branch）
+7，git checkout 切换branch
+8，git diff master # 与Master 有哪些资料不同，某两个版本的差别等
+9，git Tag 加版本号
+10，git log 将所有log 秀出，某时间段的log，修改过的档案，图形化分支
+11，git show v1 查tag:v1 的修改内容
+12，git reset 还原 
+13，git grep "te" v1 # 查v1 是否有"te" 的字串
+14，git stash 暂存
+15，git merge 合并
+16，git blame 关于此档案的所有commit 纪录
+17，git ls-files -d 还原或查看已删除的档案
+18，git revert 资料还原（commit）
+19，git gc # 整理前和整理后的差异, 可由: git count-objects 看到.
+20，git remote 维护远端档案
+21，git fetch origin 抓取/ 切换仓库（Repository） 的branch
+22，git push origin :heads/reps-branch 删除仓库（Repository） 的branch
+23，git pull 将服务器的数据拿出并和合并到本地工作目录中的当前分支
+    pull的语义不是单纯的拿，而是fetch+merge。即使和本地没区别，也会生成个空的merge commit。
+所以想要获取remote origin 直接使用 git fetch origin。不要用pull。
+24，git push 将本地修改与版本库合并的命令是
+25. git rebase -i 修改commit内容，完成合并提交等操作（合并：进入之后将2个id之间的pick删除，换成s，保存退出：wq）
+26. gitk （branch） （--all） 图形化查看修改提交
+
+
+scp -P 29418 -p 10.100.13.23:/hooks/commit-msg .git/hooks/
