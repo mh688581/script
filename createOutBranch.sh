@@ -30,6 +30,8 @@ echo --------$REPO forall -c git checkout origin/$BRANCH .
 $REPO forall -c git checkout origin/$BRANCH .
 echo --------$REPO forall -c git diff origin/$BRANCH
 $REPO forall -c git diff origin/$BRANCH
+cd $SCRIPT_DIR/android/qiku/script
+rm -rf *
 cd $SCRIPT_DIR
 }
 
