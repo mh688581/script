@@ -375,7 +375,7 @@ dir=${line%/*}
 cd $dir
 pwd
 bash copy*.sh
-cd -
+cd ${SCRIPT_DIR}/android/qiku/device/360OS
 done
 echo --------copy package end
 }
