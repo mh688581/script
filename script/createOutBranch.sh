@@ -10,7 +10,7 @@ do
    m) QO3="${OPTARG}";;
    g) isGerrit="${OPTARG}";;
    t) Tag="${OPTARG}";;
-   c) copy2="${OPTARG}"
+   c) copy2="${OPTARG}";;
    *) echo "option do not exist."
       exit 1 ;;
    esac
@@ -360,22 +360,24 @@ fi
 SO_BIT=$(grep '^SO_BIT' ${pn}/PRO_Parameters.txt | awk -F :=  '{print $2}' | tr -d " "| tr -d "\r")
 echo SO_BIT : $SO_BIT
 export SO_BIT BUILD_ENV=${SCRIPT_DIR}
+rm -rf ${SCRIPT_DIR}/share_win/*
 bash coollife_package.sh ${SCRIPT_DIR}/android/qiku/device/$1/platform_app ${SCRIPT_DIR}/share_win $pn ${SCRIPT_DIR}/android/qiku
 cd ${SCRIPT_DIR}/android/qiku/device/$1/platform_app
-rm -vf classes.jar obfuscated.jar original.jar *.txt *.xls code_check
+rm -rf classes.jar obfuscated.jar original.jar *.txt *.xls code_check symbol
 echo --------copy package end
 }
 
 copy_package() {
 echo --------begin to copy packages to platform_app
-cd ${SCRIPT_DIR}/android/qiku/device/360OS
+cd ${SCRIPT_DIR}/android/qiku/device/$1
 find . -name "copy*.sh" | while read line
 do
 dir=${line%/*}
 cd $dir
 pwd
 bash copy*.sh
-cd ${SCRIPT_DIR}/android/qiku/device/360OS
+rm -rf platform_app/symbol
+cd ${SCRIPT_DIR}/android/qiku/device/$1
 done
 echo --------copy package end
 }
