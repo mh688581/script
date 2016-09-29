@@ -20,8 +20,8 @@ if [ $NEW_BRANCH ] && [ $BRANCH ] && [ $BASE_BRANCH ]
 then
     echo =========================================
     echo "**check product branch changeset**"
-    echo NEW_BRANCH : $NEW_BRANCH
     echo BRANCH : $BRANCH
+    echo NEW_BRANCH : $NEW_BRANCH
     echo BASE_BRANCH : $BASE_BRANCH
     echo Tag : $Tag
     echo =========================================
@@ -49,10 +49,16 @@ else
 echo "--------$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BRANCH"
 $REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BRANCH
 fi
+if [ $? != '0' ] ;then
+    echo "============Product branch init Failed! ============"
+    rm -rf $SCRIPT_DIR/isbuilding.txt
+    exit 1
+fi
 
 $REPO sync -j32
 if [ $? != '0' ] ;then
     echo "============Product branch sync Failed! ============"
+    rm -rf $SCRIPT_DIR/isbuilding.txt
     exit 1
 fi
 echo --------$REPO forall -c git checkout origin/$BASE_BRANCH
@@ -103,6 +109,35 @@ MYCONTEXT
 else
 rm -rf $SCRIPT_DIR/isbuilding.txt
 echo libqkparam.a do not exists!!!! && exit 1
+fi
+
+if [ -f libdata_monitor.a ]
+then
+echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/*
+rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/*
+mv -v libdata_monitor.a android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/
+tee android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/Android.mk <<MYCONTEXT
+LOCAL_PATH:= \$(call my-dir)
+include \$(CLEAR_VARS)
+
+LOCAL_C_INCLUDES := bionic/libc
+LOCAL_SRC_FILES := \\
+    libdata_monitor.a
+LOCAL_MODULE := libdata_monitor
+LOCAL_MODULE_SUFFIX := .a
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
+LOCAL_ADDITIONAL_DEPENDENCIES := \$(libc_common_additional_dependencies)
+LOCAL_CXX_STL := none
+LOCAL_SYSTEM_SHARED_LIBRARIES :=
+LOCAL_ADDRESS_SANITIZER := false
+LOCAL_NATIVE_COVERAGE := \$(bionic_coverage)
+
+include \$(BUILD_PREBUILT)
+MYCONTEXT
+else
+rm -rf $SCRIPT_DIR/isbuilding.txt
+echo libdata_monitor.a do not exists!!!! && exit 1
 fi
 
 if [ -f libqkinstalld.a ]
