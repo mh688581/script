@@ -41,14 +41,8 @@ fi
 sync_code() {
 echo rm -rf android
 rm -rf android
-if [ a"$Tag" != a"default" ]
-then
-echo "--------$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b refs/tags/$Tag -m ${BRANCH}_tag.xml"
-$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b refs/tags/$Tag -m ${BRANCH}_tag.xml
-else
-echo "--------$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BRANCH"
-$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BRANCH
-fi
+echo "--------$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BASE_BRANCH"
+$REPO init -u ssh://minheng@10.100.13.26:29418/android/qiku/manifests -b $BASE_BRANCH
 if [ $? != '0' ] ;then
     echo "============Product branch init Failed! ============"
     rm -rf $SCRIPT_DIR/isbuilding.txt
@@ -61,25 +55,65 @@ if [ $? != '0' ] ;then
     rm -rf $SCRIPT_DIR/isbuilding.txt
     exit 1
 fi
-echo --------$REPO forall -c git checkout origin/$BASE_BRANCH
-$REPO forall -c git reset --hard origin/$BASE_BRANCH
-$REPO forall -c git checkout origin/$BASE_BRANCH
+#echo --------$REPO forall -c git checkout origin/$BASE_BRANCH
+#$REPO forall -c git reset --hard origin/$BASE_BRANCH
+#$REPO forall -c git checkout origin/$BASE_BRANCH
 cd android/qiku
 echo --------bash $SCRIPT_DIR/detele_files_ignore_git_repo.sh
 bash $SCRIPT_DIR/detele_files_ignore_git_repo.sh
 cd $SCRIPT_DIR/android/qiku
+if [ a"$Tag" != a"default" ]
+then
+echo --------$REPO forall -c git checkout $Tag .
+$REPO forall -c git checkout $Tag .
+echo --------$REPO forall -c git diff $Tag
+$REPO forall -c git diff $Tag
+else
 echo --------$REPO forall -c git checkout origin/$BRANCH .
 $REPO forall -c git checkout origin/$BRANCH .
 echo --------$REPO forall -c git diff origin/$BRANCH
 $REPO forall -c git diff origin/$BRANCH
+fi
 echo --------rm -rf $SCRIPT_DIR/android/qiku/script/*
-rm -rf $SCRIPT_DIR/android/qiku/script/*
+rm -rf $SCRIPT_DIR/android/qiku/script/* $SCRIPT_DIR/android/qiku/copy_lib.sh
 }
 
 change_vendor() {
-echo --------begin to replace vendor source codes to jar
 cd $SCRIPT_DIR
+if [ ! -f copy_libs.zip ];then echo "please upload binary files!..." && rm -rf $SCRIPT_DIR/isbuilding.txt && exit 1;fi
+unzip copy_libs.zip
+rm -rf copy_libs.zip
+echo --------begin to replace vendor source codes to jar
 dire=$1
+if [ -f libqkparam64.a ]
+then
+if [ ! -f libqkparam.a ];then echo error!!!libqkparam.a 32 not exists!! && rm -rf $SCRIPT_DIR/isbuilding.txt && exit 1;fi
+echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkparam/*
+rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkparam/*
+mv -v libqkparam.a libqkparam64.a android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkparam/
+tee android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkparam/Android.mk <<MYCONTEXT
+LOCAL_PATH:= \$(call my-dir)
+
+include \$(CLEAR_VARS)
+
+LOCAL_C_INCLUDES += \\
+        vendor/$dire/opensource/frameworks/native/cmds/libqkparam/include
+
+LOCAL_MULTILIB := both
+LOCAL_SRC_FILES_64 := libqkparam64.a
+LOCAL_SRC_FILES_32 := libqkparam.a
+
+LOCAL_MODULE := libqkparam
+
+LOCAL_MODULE_SUFFIX := .a
+
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
+
+include \$(BUILD_PREBUILT)
+MYCONTEXT
+else
 if [ -f libqkparam.a ]
 then
 echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkparam/*
@@ -110,7 +144,35 @@ else
 rm -rf $SCRIPT_DIR/isbuilding.txt
 echo libqkparam.a do not exists!!!! && exit 1
 fi
+fi
 
+if [ -f libdata_monitor64.a ]
+then
+if [ ! -f libdata_monitor.a ];then echo error!!!libdata_monitor.a 32 not exists!! && rm -rf $SCRIPT_DIR/isbuilding.txt && exit 1;fi
+echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/*
+rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/*
+mv -v libdata_monitor.a libdata_monitor64.a android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/
+tee android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/Android.mk <<MYCONTEXT
+LOCAL_PATH:= \$(call my-dir)
+include \$(CLEAR_VARS)
+
+LOCAL_C_INCLUDES := bionic/libc
+LOCAL_SRC_FILES_32 := libdata_monitor.a
+LOCAL_SRC_FILES_64 := libdata_monitor64.a
+LOCAL_MULTILIB := both
+LOCAL_MODULE := libdata_monitor
+LOCAL_MODULE_SUFFIX := .a
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
+LOCAL_ADDITIONAL_DEPENDENCIES := \$(libc_common_additional_dependencies)
+LOCAL_CXX_STL := none
+LOCAL_SYSTEM_SHARED_LIBRARIES :=
+LOCAL_ADDRESS_SANITIZER := false
+LOCAL_NATIVE_COVERAGE := \$(bionic_coverage)
+
+include \$(BUILD_PREBUILT)
+MYCONTEXT
+else
 if [ -f libdata_monitor.a ]
 then
 echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/dataflow_monitor/*
@@ -139,7 +201,38 @@ else
 rm -rf $SCRIPT_DIR/isbuilding.txt
 echo libdata_monitor.a do not exists!!!! && exit 1
 fi
+fi
 
+if [ -f libqkinstalld64.a ]
+then
+if [ ! -f libqkinstalld.a ];then echo error!!!libqkinstalld.a 32 not exists!! && rm -rf $SCRIPT_DIR/isbuilding.txt && exit 1;fi
+echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/*.mk *.cpp
+rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/*.mk
+rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/*.cpp
+mv -v libqkinstalld.a libqkinstalld64.a android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/
+tee android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/Android.mk <<MYCONTEXT
+LOCAL_PATH:= \$(call my-dir)
+
+include \$(CLEAR_VARS)
+
+LOCAL_EXPORT_C_INCLUDE_DIRS := \\
+        \$(LOCAL_PATH)
+
+LOCAL_SRC_FILES_64 := libqkinstalld64.a
+LOCAL_SRC_FILES_32 := libqkinstalld.a
+LOCAL_MULTILIB := both
+
+LOCAL_MODULE := libqkinstalld
+
+LOCAL_MODULE_SUFFIX := .a
+
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_MODULE_CLASS := STATIC_LIBRARIES
+
+include \$(BUILD_PREBUILT)
+MYCONTEXT
+else
 if [ -f libqkinstalld.a ]
 then
 echo rm -rf android/qiku/vendor/$dire/proprietary/frameworks/native/cmds/libqkinstalld/*.mk *.cpp
@@ -170,6 +263,7 @@ MYCONTEXT
 else
 rm -rf $SCRIPT_DIR/isbuilding.txt
 echo libqkinstalld.a do not exists!!!! && exit 1
+fi
 fi
 
 if [ -f libqksafetyspace64.so ];then
