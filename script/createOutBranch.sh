@@ -55,9 +55,9 @@ if [ $? != '0' ] ;then
     rm -rf $SCRIPT_DIR/isbuilding.txt
     exit 1
 fi
-#echo --------$REPO forall -c git checkout origin/$BASE_BRANCH
-#$REPO forall -c git reset --hard origin/$BASE_BRANCH
-#$REPO forall -c git checkout origin/$BASE_BRANCH
+echo --------$REPO forall -c git fetch origin $BRANCH
+$REPO forall -c git fetch origin $BRANCH
+
 cd android/qiku
 echo --------bash $SCRIPT_DIR/detele_files_ignore_git_repo.sh
 bash $SCRIPT_DIR/detele_files_ignore_git_repo.sh
@@ -460,8 +460,8 @@ echo --------push patch end
 }
 
 remove_feature() {
-cd ${SCRIPT_DIR}/android/qiku/frameworks
-echo --------begin to del feature in frameworks
+cd ${SCRIPT_DIR}/android/qiku/$1
+echo --------begin to del feature in $1
 git add -A
 git commit -sm OS_patch
 git format-patch HEAD^
@@ -513,7 +513,8 @@ echo --------copy package end
 
 sync_code
 change_vendor ${QO3}
-remove_feature
+remove_feature frameworks
+remove_feature vendor/360OS
 if [ a"${copy2}" = a"script" ];then
 copy_package2 ${QO3}
 else

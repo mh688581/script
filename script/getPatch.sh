@@ -2,11 +2,11 @@
 #author: geyu
 
 ROOT_PATH=""
-DST_FOLDER=""
+DST_FOLDER="360os-patch"
 SCRIPT_PATH=""
 BRANCH=""
 
-while getopts p:d:b: opt
+while getopts p:d:b:l: opt
 do
  case $opt in
   p) ROOT_PATH=${OPTARG};;
@@ -33,7 +33,7 @@ function check_before(){
 function usage(){
 
   echo -e "\n\033[31musage:\033[0m"
-  echo -e "\033[31m`basename $0` [-pdb]\033[0m"
+  echo -e "\033[31m`basename $0` [-pdbl]\033[0m"
   echo -e "\t\033[31m-p set the code root path\033[0m"
   echo -e "\t\033[31m-d set the release folder\033[0m"
   echo -e "\t\033[31m-b set the remote branch to generate patch\033[0m"
@@ -51,22 +51,17 @@ function get_patch(){
  echo -e "\ngenerate patch please wait."
  repo forall -c git add --all .
  repo forall -c git reset --hard
- repo forall -c git checkout $LOCAL_BRANCH
+ repo forall -c git fetch origin $LOCAL_BRANCH
+ repo forall -c git checkout origin/$LOCAL_BRANCH
+ #bash ${SCRIPT_PATH}/detele_files_ignore_git_repo.sh
  repo forall -c git checkout $BRANCH .
 
-
- cp $SCRIPT_PATH/Remove_unneed_comm_file.sh $ROOT_PATH
- sed -i 's!${MSM_ENV}/!!g' Remove_unneed_comm_file.sh
- sed -i 's!android/qiku!!g' Remove_unneed_comm_file.sh
-
- bash Remove_unneed_comm_file.sh
- rm Remove_unneed_comm_file.sh
-
- repo forall -c git add --all .
+ #repo forall -c git add --all .
  repo forall -c git commit -sm "patch"
  repo forall -c "git format-patch HEAD~1"
  echo -e "\ngenerate path is finished."
  echo -e "\033[0m"
+ cd -
 
 }
 
@@ -113,12 +108,37 @@ function release_patch(){
  echo -e "\n\033[32mrelease job is finished. all success. realse folder is "$DST_FOLDER"\033[0m"
 }
 
+zip360os(){
+	cd $ROOT_PATH/device/360OS/platform_app
+	find . -type d | xargs rm -rf
+        cd -
+	cd $ROOT_PATH/device/360OS/media
+	find . -type d | xargs rm -rf
+        cd -
+	cd $ROOT_PATH/device
+	zip -r device-360OS.zip 360OS/*
+	#zip -d device-360OS.zip .git
+        cd -
+	cp $ROOT_PATH/device/device-360OS.zip $DST_FOLDER/
+	cd $ROOT_PATH/vendor
+	zip -r vendor-360OS.zip 360OS/*
+	#zip -d vendor-360OS.zip .git 
+        cd -
+	cp $ROOT_PATH/vendor/vendor-360OS.zip $DST_FOLDER/
+        cd $ROOT_PATH/packages/apps/Settings/
+        zip -r Setting-res.zip res/
+        cd -
+        cp $ROOT_PATH/packages/apps/Settings/Setting-res.zip $DST_FOLDER/
+}
+
+
 function main(){
  
  check_before
  get_patch
  release_patch
- 
+ zip360os
+
 }
 
 main
